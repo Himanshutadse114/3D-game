@@ -1,0 +1,13 @@
+function init(self)
+    -- Add a subtle, slow "breathing" pulse to the rocks
+    local targets = {"#model_main", "#model_jag1", "#model_jag2"}
+    
+    for _, target in ipairs(targets) do
+        -- Randomize the speed slightly so all rocks don't pulse in sync
+        local duration = 2.0 + math.random() * 2.0
+        local delay = math.random() * 2.0
+        
+        go.set(target, "tint", vmath.vector4(1, 1, 1, 1))
+        go.animate(target, "tint", go.PLAYBACK_LOOP_PINGPONG, vmath.vector4(1.2, 1.2, 1.3, 1), go.EASING_INOUTSINE, duration, delay)
+    end
+end

@@ -1,0 +1,46 @@
+{
+  :bundle {
+    :html5 {
+      :architectures #{
+        "wasm-web"
+      }
+      :build_report false
+      :contentless false
+      :liveupdate false
+      :texture_compression "enabled"
+      :variant "debug"
+      :with_symbols true
+    }
+    :last-bundle-command :project.bundle-html5
+    :output-directory "C:\\Game\\Scorm-Bundle"
+    :windows {
+      :build_report false
+      :contentless false
+      :liveupdate false
+      :platform "x86_64-win32"
+      :texture_compression "enabled"
+      :variant "debug"
+      :with_symbols true
+    }
+  }
+  :code {
+    :breakpoints [
+    ]
+  }
+  :workflow {
+    :open-tabs [
+      [
+        [
+          "/game.project"
+          :cljfx-form-view
+        ]
+      ]
+    ]
+    :recent-files [
+      [
+        "/game.project"
+        :cljfx-form-view
+      ]
+    ]
+  }
+}

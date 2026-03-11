@@ -1,0 +1,17 @@
+/.internal
+/build
+/tools
+/Scorm-Bundle
+.externalToolBuilders
+.DS_Store
+Thumbs.db
+.lock-wscript
+*.pyc
+.project
+.cproject
+builtins
+/.vscode
+*.zip
+*.wasm
+*.js.map
+check_project.py

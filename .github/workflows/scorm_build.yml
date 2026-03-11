@@ -1,0 +1,44 @@
+name: Build SCORM Zip
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup Java
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+
+    - name: Download Bob
+      run: |
+        mkdir -p tools
+        curl -L -o tools/bob.jar https://github.com/defold/defold/releases/download/1.5.0/bob.jar
+
+    - name: Resolve Dependencies
+      run: java -jar tools/bob.jar resolve
+
+    - name: Build HTML5
+      run: |
+        mkdir -p build/html5
+        java -jar tools/bob.jar --archive --platform js-web build bundle --variant release --archive build/html5
+
+    - name: Package SCORM
+      run: |
+        cp imsmanifest.xml build/html5/js-web/innvikta_driller/imsmanifest.xml
+        cd build/html5/js-web/innvikta_driller
+        zip -r ../../../../innvikta_driller_scorm.zip *
+
+    - name: Upload SCORM Zip
+      uses: actions/upload-artifact@v3
+      with:
+        name: scorm-package
+        path: innvikta_driller_scorm.zip

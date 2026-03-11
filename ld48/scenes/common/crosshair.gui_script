@@ -1,0 +1,369 @@
+local player_state = require("ld48.scenes.common.player_state")
+
+local function gui_set_alpha(node, alpha)
+    gui.cancel_animation(node, "color.w")
+    local color = gui.get_color(node)
+    gui.set_color(node, vmath.vector4(color.x, color.y, color.z, alpha))
+end
+
+local function gui_anim_alpha(node, alpha, time, delay)
+    gui.cancel_animation(node, "color.w")
+    gui.animate(node, "color.w", alpha, gui.EASING_OUTQUAD, time, delay or 0)
+end
+
+local quiz_questions = {
+    { q = "Scenario: You receive an urgent email from your CEO (who is currently traveling) asking you to urgently wire funds to a new vendor to 'close a critical deal'. What is the most secure first step?", options = {"Process the request immediately to avoid losing the deal", "Reply to the email asking for confirmation", "Call the CEO on a known number to verify the request", "Forward the email to the entire finance team"}, ans = 3 },
+    { q = "Scenario: A visitor wearing a technician uniform follows you closely through a secure badge-access door without swiping. They are carrying a heavy ladder. What is the correct action?", options = {"Hold the door open to be helpful", "Ignore them and continue to your desk", "Ask them to swipe their badge or escort them to reception", "Take a photo of them and post it on social media"}, ans = 3 },
+    { q = "Scenario: You find an unlabelled USB thumb drive in the company parking lot near your car. You want to find out who it belongs to. What should you do?", options = {"Plug it into your workstation to check for a resume", "Plug it into a home computer to be safe", "Turn it over to the IT Security department immediately", "Wipe the drive and use it for your own files"}, ans = 3 },
+    { q = "Scenario: While working at a coffee shop, you need to access sensitive company data. The shop offers 'Free-Google-WiFi'. How should you proceed?", options = {"Connect directly and log in to your portals", "Connect but only use HTTPS websites", "Connect only after enabling your company-approved VPN", "Wait until you get home to do any work"}, ans = 3 },
+    { q = "Scenario: You receive a phone call from 'Microsoft Support' claiming your computer is sending out viruses and they need remote access to fix it. What is the likely situation?", options = {"A helpful technician is preventing a local outbreak", "It is a remote access trojan (RAT) scam", "Your ISP has reported you to Microsoft", "It is a routine automated security check"}, ans = 2 },
+    { q = "Scenario: An app on your phone requests permission to access your 'Location', 'Contacts', and 'Microphone' despite being a simple flashlight app. What should you do?", options = {"Grant all permissions for best performance", "Grant permissions but only while using the app", "Deny permissions and uninstall the suspicious app", "Buy a new phone with better security"}, ans = 3 },
+    { q = "Scenario: You're about to post a photo of your new office workstation on LinkedIn to celebrate a promotion. What should you check first?", options = {"Make sure your monitor isn't showing sensitive data", "Check if your password sticky-note is visible", "Ensure no internal badges or keys are in the shot", "All of the above"}, ans = 4 },
+    { q = "Scenario: You get a text message (SMS) from 'Your Bank' stating your account is locked and providing a link to 'verify your identity'. The URL is 'bank-secure-auth.net'. What's wrong?", options = {"The bank never uses SMS for alerts", "The domain does not match the official bank website", "You should only verify identity in person", "SMS links are always encrypted and safe"}, ans = 2 },
+    { q = "Scenario: Your teammate asks to borrow your laptop for 'just 5 minutes' to check their email because their phone died. They are logged into their own accounts. What is the protocol?", options = {"Let them use it as they are a trusted colleague", "Log out of your sessions and let them use it", "Politely decline; never share your authenticated device", "Watch them the entire time they use it"}, ans = 3 },
+    { q = "Scenario: You receive an email with a '.zip' attachment labeled 'Q4_Bonus_Plan'. You weren't expecting this, and the sender's name is spelled slightly wrong. What is the risk?", options = {"The file is too large for your inbox", "It could contain a macro-virus or ransomware", "The misspelled name means it's for someone else", "ZIP files are automatically scanned and safe"}, ans = 2 },
+    { q = "Scenario: A suspicious link in an email leads to a site that looks identical to your company's login page. This is an example of:", options = {"Pharming", "Spear Phishing", "Whaling", "Vishing"}, ans = 2 },
+    { q = "Scenario: You need to send a file containing customer Personally Identifiable Information (PII) to a partner. How should you send it?", options = {"As a standard email attachment", "Upload to a public file-sharing site", "Through an encrypted, secure file-transfer portal", "Rename the file extension to hide its contents"}, ans = 3 },
+    { q = "Scenario: You are leaving your desk for a quick 2-minute coffee break. Your screen is currently showing an internal project plan. What is the best practice?", options = {"Leave it open since you're coming right back", "Turn off the monitor but leave the PC running", "Lock your workstation (Win+L) before leaving", "Ask a neighbor to watch your screen"}, ans = 3 },
+    { q = "Scenario: You discover that a co-worker has written their login password on a note under their keyboard. What is the professional response?", options = {"Ignore it; it's their responsibility", "Take a photo of it to prove they are unsafe", "Private inform them and suggest a password manager", "Use it to test if their account has admin rights"}, ans = 3 },
+    { q = "Scenario: You receive an email from a known contact, but the tone is strangely formal and they are asking for 'confidential project files'. What should you suspect?", options = {"They have been promoted recently", "Their email account has been compromised", "They are under high stress at work", "It is an automated backup request"}, ans = 2 },
+    { q = "Scenario: You notice an unknown device labeled 'Hacker-PC' appearing in your home Wi-Fi network list. What should be your first step?", options = {"Try to hack the device back", "Disconnect your router from the internet", "Change your Wi-Fi password to a stronger one", "Ignore it; it's likely a neighbor's phone"}, ans = 3 },
+    { q = "Scenario: An 'Emergency Alert' pop-up on a website says your 'System is Corrupted' and asks you to click a button to 'Scan Now'. What is this?", options = {"A helpful browser security feature", "Scareware designed to trick you into downloading malware", "A legitimate Windows update notification", "A virus that has already infected your machine"}, ans = 2 },
+    { q = "Scenario: You are creating a password for a new sensitive account. Which strategy is generally considered the most secure today?", options = {"A short word with many symbols (e.g. P@$$w0rd!)", "A long passphrase of random words (e.g. CorrectHorseBatteryStaple)", "Your pet's name followed by your birth year", "The same password you use for your personal email"}, ans = 2 },
+    { q = "Scenario: When setting up a new smart home device (IoT), what is the most important security configuration?", options = {"Change the default administrative password", "Enable the 'auto-update' feature if available", "Place it on a separate guest Wi-Fi network if possible", "All of the above"}, ans = 4 },
+    { q = "Scenario: You are browsing and an 'SSL Certificate Error' appears on a familiar site. What should you do?", options = {"Click 'Proceed Anyway' to reach the content", "Clear your browser cache and try again", "Close the tab; the site might be impersonated", "Disable your antivirus to bypass the block"}, ans = 3 },
+    { q = "Scenario: A deepfake video of your CFO appears on social media making a controversial statement. Why is this a security concern for the company?", options = {"It is a harmless prank", "It could be used for advanced social engineering (Vishing)", "It proves the CFO uses bad cameras", "It helps the company get more followers"}, ans = 2 },
+    { q = "Scenario: You receive a Multi-Factor Authentication (MFA) prompt on your phone that you didn't trigger. What does this mean?", options = {"Your phone is malfunctioning", "Your password has been stolen and someone is trying to log in", "The service is doing a routine security test", "You should tap 'Approve' to clear the notification"}, ans = 2 },
+    { q = "Scenario: Your company's 'Clean Desk Policy' exists primarily to:", options = {"Keep the office looking tidy for visitors", "Prevent unauthorized viewing of sensitive physical data", "Reduce the cost of cleaning services", "Encourage employees to work from home"}, ans = 2 },
+    { q = "Scenario: What is the primary risk of using 'Shadow IT' (unapproved software/cloud services)?", options = {"It makes you more productive", "The company loses control over data and security standards", "It saves the company money on licenses", "It makes the IT department feel redundant"}, ans = 2 },
+    { q = "Scenario: You notice a strange 'plug-in' device on the back of a shared office computer that looks like a small USB adapter between the keyboard and the PC. This might be:", options = {"A wireless mouse receiver", "A hardware keylogger", "A speed booster for the CPU", "A cooling device for the USB port"}, ans = 2 },
+    { q = "Scenario: You are being asked to provide your 'Social Security Number' (SSN) as part of an online survey for free 'tech gadgets'. What's the best response?", options = {"Provide it to get the rewards", "Provide a fake number to stay safe", "Close the survey; legitimate surveys never ask for SSNs", "Ask your manager if the gadgets are good"}, ans = 3 },
+    { q = "Scenario: You receive an email from 'HR' with a 'Mandatory Training' link. The email address is 'human.resources@ourcompany-hr.com' (your actual domain is 'ourcompany.com'). Is this safe?", options = {"Yes, HR often uses different domains", "No, it is a likely phishing attempt using a look-alike domain", "Yes, as long as the email logo looks correct", "No, HR always speaks to you in person"}, ans = 2 },
+    { q = "Scenario: You accidentally clicked a suspicious link in an email but didn't enter any data. Should you still report it?", options = {"No, if you didn't enter data, you are safe", "Yes, malware can be delivered via 'drive-by' downloads", "Only if your computer starts acting strangely", "No, it will make you look bad to the IT team"}, ans = 2 },
+    { q = "Scenario: What is 'Data Minimization' in the context of security?", options = {"Deleting all your files every Friday", "Only collecting and keeping data that is absolutely necessary", "Compressing large files into .zip format", "Reducing the font size for sensitive documents"}, ans = 2 },
+    { q = "Scenario: You are on a business trip and lose your company smart phone. What is your first priority?", options = {"Buy a replacement immediately so you don't miss calls", "Try to 'Find My Phone' for at least 24 hours", "Report it to IT so they can remotely wipe the device", "Wait until you get back to the office to report it"}, ans = 3 },
+    { q = "Scenario: You are working on a public project and need to share code. You accidentally include an 'API Key' in your public GitHub repository. What's the fix?", options = {"Delete the commit and push again", "Just delete the file and carry on", "Revoke/Invalidate the key immediately and generate a new one", "Mark the repository as private and keep the key"}, ans = 3 },
+    { q = "Scenario: You see a coworker 'Tailgating' another employee into a restricted server room. Even if you know them, why is this bad?", options = {"They might be carrying too much", "It bypasses individual audit logs (Who entered when?)", "It's not bad if they are a known employee", "It puts too much strain on the door hinges"}, ans = 2 },
+    { q = "Scenario: A software update notification pops up during a busy meeting. What should you do?", options = {"Click 'Remind Me in 1 Month'", "Ignore it permanently", "Schedule it to run as soon as your meeting ends", "Disable updates to prevent interruptions"}, ans = 3 },
+    { q = "Scenario: What is the benefit of a 'Least Privilege' access model?", options = {"It makes everyone feel equal", "It limits the damage a compromised account can do", "It reduces the amount of work for the IT team", "It prevents managers from seeing your folders"}, ans = 2 },
+    { q = "Scenario: You suspect your password has been compromised. After changing it, where else should you change it?", options = {"Nowhere else; the new password is safe", "On any other accounts where you used the same password", "On your home router only", "On your social media only"}, ans = 2 },
+    { q = "Scenario: Why is 'Shoulder Surfing' particularly dangerous in an airplane or train?", options = {"People are bored and want to read your work", "It's easy to see your screen/PIN in tight public spaces", "There are no security guards around", "The movement makes your screen easier to read"}, ans = 2 },
+    { q = "Scenario: What is the main purpose of 'Encryption at Rest'?", options = {"To keep data safe while it's being transmitted", "To protect data if the physical storage (disk) is stolen", "To make the database run faster", "To save storage space by compressing data"}, ans = 2 },
+    { q = "Scenario: You get an email from 'Helpdesk' asking for your password to 'confirm your account migration'. What is the policy?", options = {"Provide it; they need it to do their jobs", "Provide it but change it immediately after", "Never provide your password to anyone, even IT Support", "Send it in a separate encrypted file"}, ans = 3 },
+    { q = "Scenario: You are using a 'Password Manager'. What is its biggest advantage?", options = {"It lets you use the same password everywhere", "It generates and stores unique, strong passwords for every site", "It prevents you from ever being hacked", "It makes your computer run faster"}, ans = 2 },
+    { q = "Scenario: What does 'Cross-Site Scripting' (XSS) typically target?", options = {"The server's hard drive", "The user's web browser session", "The local network router", "The physical data center"}, ans = 2 },
+    { q = "Scenario: You receive a 'Vishing' (Voice Phishing) call. The caller knows your name and job title. Does this mean they are legitimate?", options = {"Yes, only official people have that information", "No, this information is easily found on LinkedIn or company sites", "Yes, if they sound professional and polite", "No, but you should listen to them just in case"}, ans = 2 },
+    { q = "Scenario: What is a 'Logic Bomb' in malware?", options = {"A virus that explodes your PC", "Code that triggers a malicious action when a condition is met", "A fake error message that scares you", "A tool for fixing broken logic in code"}, ans = 2 },
+    { q = "Scenario: What should you do with a 'Secure' document you no longer need?", options = {"Toss it in the regular paper recycling bin", "Shred it using a cross-cut shredder", "Store it in an unlocked cabinet forever", "Use it as scrap paper for notes"}, ans = 2 },
+    { q = "Scenario: You find a 'Keylogger' software on your computer. What is the most likely way it got there?", options = {"A factory defect in the keyboard", "You downloaded a 'free' tool that was actually a Trojan", "Your monitor is recording your hands", "The keyboard batteries are low"}, ans = 2 },
+    { q = "Scenario: Why is 'Public Wi-Fi' dangerous for 'Man-in-the-Middle' (MitM) attacks?", options = {"The signal is too weak", "Hackers can position themselves between you and the router", "It makes your phone hot", "Public Wi-Fi turns off your firewall"}, ans = 2 },
+    { q = "Scenario: What is the 'Principal of Least Privilege'?", options = {"Giving everyone the same low access", "Users only have access to what they need for their job", "Only the CEO has admin access", "Blocking all access until a ticket is raised"}, ans = 2 },
+    { q = "Scenario: What is 'Pretexting'?", options = {"Testing your password before use", "Creating a fabricated scenario to steal information", "Sending a text message before a call", "A type of advanced coding"}, ans = 2 },
+    { q = "Scenario: How does 'MFA' help even if your password is stolen?", options = {"It automatically changes your password", "The hacker still needs the second 'factor' (like your phone) to log in", "It notifies the police immediately", "It encrypts your password so the hacker can't read it"}, ans = 2 },
+    { q = "Scenario: What is 'Spear Phishing' compared to regular 'Phishing'?", options = {"It uses a faster connection", "It is highly targeted at a specific person or group", "It only happens on the weekend", "It involves stealing actual physical spears"}, ans = 2 },
+    { q = "Scenario: You are leaving the company. What is the security protocol for your accounts?", options = {"Keep them active so you can help with handovers", "All access should be revoked immediately upon departure", "Change the password to something only you know", "Forward all your emails to your personal account"}, ans = 2 }
+}
+
+local function update_selection(self)
+    for i = 1, 4 do
+        local bg = self.opt_bgs[i]
+        if i == self.quiz_index then
+            gui.set_color(bg, vmath.vector4(0.4, 0.4, 0.8, 1)) -- Highlighted
+            gui.set_scale(bg, vmath.vector3(1.05, 1.05, 1.0))
+        else
+            gui.set_color(bg, vmath.vector4(0.2, 0.2, 0.4, 1)) -- Normal
+            gui.set_scale(bg, vmath.vector3(1.0, 1.0, 1.0))
+        end
+    end
+end
+
+function init(self)
+    self.arrow = gui.get_node("arrow")
+    self.crosshair = gui.get_node("crosshair")
+    self.ext = gui.get_node("crosshair_ext")
+    self.blue_count = gui.get_node("blue_count")
+    self.blue_count_text = gui.get_node("blue_count_text")
+    self.compass_text = gui.get_node("compass_text")
+    self.mill_arrow = gui.get_node("mill_arrow")
+
+    self.tutorial1 = gui.get_node("tutorial1")
+    self.tutorial2 = gui.get_node("tutorial2")
+    self.quote_bg = gui.get_node("quote_bg")
+    self.quote_text = gui.get_node("quote_text")
+    
+    self.opt_bgs = {
+        gui.get_node("opt_bg_1"),
+        gui.get_node("opt_bg_2"),
+        gui.get_node("opt_bg_3"),
+        gui.get_node("opt_bg_4")
+    }
+    self.opt_txts = {
+        gui.get_node("opt_txt_1"),
+        gui.get_node("opt_txt_2"),
+        gui.get_node("opt_txt_3"),
+        gui.get_node("opt_txt_4")
+    }
+
+    self.cyber_rank_bg = gui.get_node("cyber_rank_bg")
+    self.cyber_rank_text = gui.get_node("cyber_rank_text")
+
+    gui_set_alpha(self.tutorial1, 0)
+    gui_set_alpha(self.tutorial2, 0)
+    gui_set_alpha(self.quote_bg, 0)
+    gui.set_enabled(self.quote_bg, false)
+    
+    self.quiz_index = 1
+    self.current_quiz = nil
+    
+    msg.post(".", "acquire_input_focus")
+end
+
+function final(self)
+end
+
+local function show_quiz(self)
+    if gui.is_enabled(self.quote_bg) then
+        return
+    end
+    print("DEBUG: show_quiz triggered")
+    self.current_quiz = quiz_questions[math.random(#quiz_questions)]
+    self.quiz_index = 1
+    
+    -- 1. Setup Initial Content and Scales
+    local q_scale = 0.6
+    local o_scale = 0.5
+    gui.set_scale(self.quote_text, vmath.vector3(q_scale, q_scale, 1))
+    gui.set_text(self.quote_text, self.current_quiz.q)
+    
+    -- Ensure question node is wide enough for the 1600 background (minus margins)
+    local target_width_screen = 1400
+    local q_width = target_width_screen / q_scale
+    gui.set_size(self.quote_text, vmath.vector3(q_width, 1000, 0))
+    
+    for i = 1, 4 do
+        gui.set_scale(self.opt_txts[i], vmath.vector3(o_scale, o_scale, 1))
+        gui.set_text(self.opt_txts[i], self.current_quiz.options[i])
+        gui.set_size(self.opt_txts[i], vmath.vector3(target_width_screen / o_scale, 500, 0))
+    end
+
+    -- 2. Layout Positioning
+    local top_margin = 80
+    local bottom_margin = 100
+    local element_gap = 25
+    local option_inner_padding = 40
+    
+    -- Start from top
+    -- Calculate metrics using the font name directly
+    local q_metrics = gui.get_text_metrics("subtitle", self.current_quiz.q, q_width, true, 1.0, 0.0)
+    local q_h = q_metrics.height * q_scale
+    
+    local o_heights = {}
+    local total_o_height = 0
+    for i = 1, 4 do
+        local o_metrics = gui.get_text_metrics("regular", self.current_quiz.options[i], target_width_screen/o_scale, true, 1.0, 0.0)
+        local oh = math.max(80, (o_metrics.height * o_scale) + option_inner_padding)
+        o_heights[i] = oh
+        total_o_height = total_o_height + oh + element_gap
+    end
+    
+    local total_bg_h = top_margin + q_h + (element_gap * 2) + total_o_height + bottom_margin
+    gui.set_size(self.quote_bg, vmath.vector3(1600, total_bg_h, 0))
+    
+    -- Positioning relative to the new top
+    local cur_y = total_bg_h / 2 - top_margin
+    
+    -- Question (Pivot N)
+    gui.set_position(self.quote_text, vmath.vector3(0, cur_y, 0))
+    cur_y = cur_y - q_h - (element_gap * 2)
+    
+    -- Options
+    for i = 1, 4 do
+        local bh = o_heights[i]
+        gui.set_size(self.opt_bgs[i], vmath.vector3(1500, bh, 0))
+        gui.set_position(self.opt_bgs[i], vmath.vector3(0, cur_y - bh/2, 0))
+        cur_y = cur_y - bh - element_gap
+    end
+
+    -- Hint
+    local hint = gui.get_node("quiz_hint")
+    gui.set_position(hint, vmath.vector3(0, cur_y - 20, 0))
+    
+    update_selection(self)
+    
+    gui.set_enabled(self.quote_bg, true)
+    gui.cancel_animation(self.quote_bg, "color.w")
+    gui_set_alpha(self.quote_bg, 0)
+    gui_anim_alpha(self.quote_bg, 1, 0.3)
+    
+    self.submitted = false
+    -- Pause camera movement
+    player_state.cursor_locked = false
+end
+
+function update(self, dt)
+    local s = player_state
+    local ws = s.weapon_state
+    local inv = s.inventory
+
+    -- Crosshair
+    local lower_size = 78
+    local upper_size = 300
+    local lower_alpha = 1
+    local upper_alpha = 0.6
+
+    local v = lower_size + (upper_size - lower_size) * (ws.aim_penalty / ws.aim_penalty_upper)
+    gui.set_size(self.ext, vmath.vector3(v, v, 0))
+
+    v = lower_alpha + (upper_alpha - lower_alpha) * (ws.aim_penalty / ws.aim_penalty_upper)
+    gui_set_alpha(self.ext, v)
+
+    -- Blue res count
+    gui.set_text(self.blue_count_text, string.format("%03d", inv.blue))
+    if self.cur_blue ~= nil and self.cur_blue ~= inv.blue then
+        gui.cancel_animation(self.blue_count, gui.PROP_SCALE)
+        gui.set_scale(self.blue_count, vmath.vector3(1.25))
+        gui.animate(self.blue_count, gui.PROP_SCALE, vmath.vector3(1.0), gui.EASING_OUTQUAD, 0.3)
+    end
+    self.cur_blue = inv.blue
+
+    -- Arrow & Crosshair visibility
+    local is_quiz_open = gui.is_enabled(self.quote_bg)
+    local hide_crosshair = ws.holo or is_quiz_open
+
+    gui.set_enabled(self.arrow, ws.holo and not is_quiz_open)
+    gui.set_enabled(self.crosshair, not hide_crosshair)
+    gui.set_enabled(self.ext, not hide_crosshair)
+
+    -- Compass Navigator to Mill
+    local target_pos = s.power_plant_pos
+    local dx = target_pos.x - s.pos.x
+    local dz = target_pos.z - s.pos.z
+    local dist = math.sqrt(dx*dx + dz*dz)
+    
+    if self.compass_text then
+        gui.set_text(self.compass_text, string.format("MILL (%dm)", math.floor(dist / 10)))
+    end
+
+    if self.mill_arrow then
+        local target_angle = math.deg(math.atan2(dz, dx)) -- World angle to target
+        local rel_angle = target_angle - s.yaw -- Relative angle to view
+        
+        -- Invert because gui rotation is CCW but Increasing yaw is Right turn
+        gui.set_rotation(self.mill_arrow, vmath.vector3(0, 0, -rel_angle))
+        
+        -- Make it pulse/breathe when far away to be more noticeable
+        if dist > 3000 then
+            local s = 0.8 + math.sin(socket.gettime() * 5) * 0.1
+            gui.set_scale(self.mill_arrow, vmath.vector3(s, s, 1))
+        else
+            gui.set_scale(self.mill_arrow, vmath.vector3(0.8, 0.8, 1))
+        end
+    end
+
+    -- Update Cyber Rank HUD
+    local rank_str = string.upper(s.cyber_rank)
+    gui.set_text(self.cyber_rank_text, string.format("RANK: %s | XP: %d", rank_str, s.cyber_xp))
+end
+
+local function refresh_cyber_HUD(self)
+    local s = player_state
+    local rank_str = string.upper(s.cyber_rank)
+    gui.set_text(self.cyber_rank_text, string.format("RANK: %s | XP: %d", rank_str, s.cyber_xp))
+end
+
+local function check_rank_up(self)
+    local s = player_state
+    local old_rank = s.cyber_rank
+    
+    if s.cyber_xp >= 31 then
+        s.cyber_rank = "Elite"
+    elseif s.cyber_xp >= 16 then
+        s.cyber_rank = "Specialist"
+    elseif s.cyber_xp >= 6 then
+        s.cyber_rank = "Guard"
+    else
+        s.cyber_rank = "Novice"
+    end
+    
+    if old_rank ~= s.cyber_rank then
+        -- Level up effect
+        gui.cancel_animation(self.cyber_rank_bg, gui.PROP_SCALE)
+        gui.set_scale(self.cyber_rank_bg, vmath.vector3(1.3))
+        gui.animate(self.cyber_rank_bg, gui.PROP_SCALE, vmath.vector3(1.0), gui.EASING_OUTBOUNCE, 0.5)
+        print("DEBUG: Rank Up! New Rank: " .. s.cyber_rank)
+    end
+end
+
+function on_message(self, message_id, message, sender)
+    if message_id == hash("tutorial1") then
+        gui_anim_alpha(self.tutorial1, 1, 0.3)
+    elseif message_id == hash("tutorial2") then
+        gui_anim_alpha(self.tutorial1, 0, 0.3)
+        gui_anim_alpha(self.tutorial2, 1, 0.3)
+    elseif message_id == hash("tutorial3") then
+        gui_anim_alpha(self.tutorial2, 0, 0.3)
+    elseif message_id == hash("show_quote") then
+        show_quiz(self)
+    end
+end
+
+function on_input(self, action_id, action)
+    if not gui.is_enabled(self.quote_bg) then return end
+    
+    if action.pressed then
+        print("DEBUG: Quiz on_input", action_id)
+        
+        if action_id == hash("up") or action_id == hash("key_up") or action_id == hash("key_w") then
+            self.quiz_index = self.quiz_index - 1
+            if self.quiz_index < 1 then self.quiz_index = 4 end
+            update_selection(self)
+        elseif action_id == hash("down") or action_id == hash("key_down") or action_id == hash("key_s") then
+            self.quiz_index = self.quiz_index + 1
+            if self.quiz_index > 4 then self.quiz_index = 1 end
+            update_selection(self)
+        elseif action_id == hash("enter") or action_id == hash("key_enter") then
+            if self.submitted then return end
+            self.submitted = true
+            
+            print("DEBUG: Quiz submitted index", self.quiz_index)
+            if self.quiz_index == self.current_quiz.ans then
+                print("DEBUG: Quiz Correct!")
+                -- XP is handled here, Ammo is handled by driller_main via quiz_success message
+                player_state.cyber_xp = player_state.cyber_xp + 5
+                check_rank_up(self)
+                refresh_cyber_HUD(self)
+                msg.post("driller:/main#script", "quiz_success")
+                gui_anim_alpha(self.quote_bg, 0, 0.3)
+                timer.delay(0.3, false, function()
+                    gui.set_enabled(self.quote_bg, false)
+                    player_state.cursor_locked = true
+                end)
+            else
+                self.submitted = false -- Allow retrying if failed
+                print("DEBUG: Quiz Failed!")
+                msg.post("driller:/main#script", "quiz_fail")
+                -- Visual feedback for wrong answer
+                gui.set_color(self.opt_bgs[self.quiz_index], vmath.vector4(0.8, 0.2, 0.2, 1))
+                
+                -- Penalty feedback
+                local hint = gui.get_node("quiz_hint")
+                gui.set_text(hint, "Incorrect! You lose 1 crystal.")
+                gui.set_color(hint, vmath.vector4(1, 0.3, 0.3, 1))
+                
+                msg.post("driller:/main#script", "quiz_fail")
+                
+                -- Close after a short delay so they can read the penalty
+                timer.delay(1.5, false, function()
+                    gui_anim_alpha(self.quote_bg, 0, 0.3)
+                    timer.delay(0.3, false, function()
+                        gui.set_enabled(self.quote_bg, false)
+                        player_state.cursor_locked = true
+                        -- Reset hint for next time
+                        gui.set_text(hint, "Arrows to move. Enter to select.")
+                        gui.set_color(hint, vmath.vector4(0.7, 0.7, 0.7, 1))
+                    end)
+                end)
+            end
+        end
+    end
+end

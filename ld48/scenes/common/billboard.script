@@ -1,0 +1,10 @@
+local app_render = require("ld48.app.render")
+
+function update(self, dt)
+    local p1 = go.get_position()
+    local p2 = app_render.view_position
+    
+    -- Face the camera only on the Y axis (keep trees vertical)
+    local angle = math.atan2(p1.x - p2.x, p1.z - p2.z)
+    go.set_rotation(vmath.quat_rotation_y(angle))
+end

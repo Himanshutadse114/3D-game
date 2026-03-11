@@ -1,0 +1,11 @@
+size {
+  x: 64.0
+  y: 32.0
+}
+color {
+  y: 0.3
+  z: 0.3
+}
+text: "-1"
+font: "/ld48/assets/fonts/subtitle.font"
+material: "/ld48/materials/label_no_depth.material"

@@ -1,0 +1,9 @@
+function init(self)
+    local pos = go.get_position()
+    -- Float up
+    go.animate(".", "position.y", go.PLAYBACK_ONCE_FORWARD, pos.y + 10, go.EASING_OUTQUAD, 0.4)
+    -- Fade out
+    go.animate("#label", "color.w", go.PLAYBACK_ONCE_FORWARD, 0, go.EASING_INQUAD, 0.4, 0, function()
+        go.delete()
+    end)
+end
