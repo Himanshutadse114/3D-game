@@ -30,10 +30,6 @@
   :workflow {
     :open-tabs [
       [
-        [
-          "/game.project"
-          :cljfx-form-view
-        ]
       ]
     ]
     :recent-files [

@@ -27,20 +27,17 @@ jobs:
         curl -L -o tools/bob.jar "https://d.defold.com/archive/${BOB_SHA1}/bob/bob.jar"
 
     - name: Resolve Dependencies
-      run: |
-        cd ld48
-        java -jar ../tools/bob.jar --email foo@bar.com --auth 12345 resolve
+      run: java -jar tools/bob.jar --email foo@bar.com --auth 12345 resolve
 
     - name: Build HTML5
       run: |
-        cd ld48
         mkdir -p build/html5
-        java -jar ../tools/bob.jar --email foo@bar.com --auth 12345 --archive --platform js-web build bundle --variant release --archive --bundle-output build/html5
+        java -jar tools/bob.jar --email foo@bar.com --auth 12345 --archive --platform js-web build bundle --variant release --archive --bundle-output build/html5
 
     - name: Package SCORM
       run: |
-        # Find the actual output directory inside ld48/build
-        EXPORT_DIR=$(find ld48/build/html5/js-web -maxdepth 1 -mindepth 1 -type d | head -n 1)
+        # Find the actual output directory inside build
+        EXPORT_DIR=$(find build/html5/js-web -maxdepth 1 -mindepth 1 -type d | head -n 1)
         if [ -z "$EXPORT_DIR" ]; then
           echo "Error: Could not find build directory"
           exit 1
@@ -48,7 +45,7 @@ jobs:
         echo "Export directory: $EXPORT_DIR"
         cp imsmanifest.xml "$EXPORT_DIR/imsmanifest.xml"
         cd "$EXPORT_DIR"
-        zip -r ../../../../innvikta_driller_scorm.zip *
+        zip -r ../../../innvikta_driller_scorm.zip *
 
     - name: Upload SCORM Zip
       uses: actions/upload-artifact@v4

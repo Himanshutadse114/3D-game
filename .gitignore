@@ -15,3 +15,4 @@ builtins
 *.wasm
 *.js.map
 check_project.py
+/.editor_settings
