@@ -1,4 +1,4 @@
-﻿script: "/scenes/intro/intro_ui.gui_script"
+script: "/scenes/intro/intro_ui.gui_script"
 fonts {
   name: "subtitle"
   font: "/assets/fonts/subtitle.font"

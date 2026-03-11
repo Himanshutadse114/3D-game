@@ -1,4 +1,4 @@
-﻿script: "/scenes/common/crosshair.gui_script"
+script: "/scenes/common/crosshair.gui_script"
 fonts {
   name: "subtitle"
   font: "/assets/fonts/subtitle.font"

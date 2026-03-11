@@ -1,4 +1,4 @@
-﻿script: "/transition.gui_script"
+script: "/transition.gui_script"
 textures {
   name: "image"
   texture: "/assets/transition.atlas"

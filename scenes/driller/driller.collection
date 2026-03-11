@@ -1,4 +1,4 @@
-﻿name: "driller"
+name: "driller"
 instances {
   id: "shadows"
   prototype: "/scenes/common/shadows.go"
