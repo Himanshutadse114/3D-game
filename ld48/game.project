@@ -1,6 +1,6 @@
 [bootstrap]
-main_collection = /ld48/game.collection
-render = /ld48/render/custom.render
+main_collection = /game.collection
+render = /render/custom.render
 
 [physics]
 scale = 0.01
@@ -21,7 +21,7 @@ width = 2500
 height = 1400
 high_dpi = 1
 vsync = 0
-display_profiles = /ld48/render/layouts.display_profiles
+display_profiles = /render/layouts.display_profiles
 
 [android]
 input_method = HiddenInputField
@@ -44,7 +44,7 @@ clear_color_blue = 0.9
 [html5]
 scale_mode = fit
 engine_arguments = --verify-graphics-calls=false
-splash_image = /ld48/res/web/loader_cover.png
+splash_image = /res/web/loader_cover.png
 heap_size = 300
 cssfile = /builtins/manifests/web/dark_theme.css
 
@@ -52,7 +52,7 @@ cssfile = /builtins/manifests/web/dark_theme.css
 game_binding = /builtins/input/all.input_binding
 
 [graphics]
-texture_profiles = /ld48/render/custom.texture_profiles
+texture_profiles = /render/custom.texture_profiles
 max_draw_calls = 5000
 
 [sprite]
