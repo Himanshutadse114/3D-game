@@ -1,15 +1,15 @@
-script: "/ld48/scenes/common/crosshair.gui_script"
+﻿script: "/scenes/common/crosshair.gui_script"
 fonts {
   name: "subtitle"
-  font: "/ld48/assets/fonts/subtitle.font"
+  font: "/assets/fonts/subtitle.font"
 }
 fonts {
   name: "regular"
-  font: "/ld48/assets/fonts/regular.font"
+  font: "/assets/fonts/regular.font"
 }
 textures {
   name: "ui"
-  texture: "/ld48/assets/ui.atlas"
+  texture: "/assets/ui.atlas"
 }
 background_color {
   x: 0.0
@@ -1020,6 +1020,7 @@ nodes {
   template_node_child: false
   size_mode: SIZE_MODE_AUTO
 }
-material: "/ld48/materials/gui.material"
+material: "/materials/gui.material"
 adjust_reference: ADJUST_REFERENCE_PARENT
 max_nodes: 512
+

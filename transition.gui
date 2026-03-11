@@ -1,7 +1,7 @@
-script: "/ld48/transition.gui_script"
+﻿script: "/transition.gui_script"
 textures {
   name: "image"
-  texture: "/ld48/assets/transition.atlas"
+  texture: "/assets/transition.atlas"
 }
 background_color {
   x: 0.0
@@ -126,3 +126,4 @@ layouts {
 }
 adjust_reference: ADJUST_REFERENCE_PARENT
 max_nodes: 1000
+

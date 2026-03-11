@@ -1,10 +1,10 @@
-name: "intro"
+﻿name: "intro"
 scale_along_z: 0
 embedded_instances {
   id: "main"
   data: "components {\n"
   "  id: \"script\"\n"
-  "  component: \"/ld48/scenes/intro/intro_main.script\"\n"
+  "  component: \"/scenes/intro/intro_main.script\"\n"
   "  position {\n"
   "    x: 0.0\n"
   "    y: 0.0\n"
@@ -19,7 +19,7 @@ embedded_instances {
   "}\n"
   "components {\n"
   "  id: \"ui\"\n"
-  "  component: \"/ld48/scenes/intro/intro_ui.gui\"\n"
+  "  component: \"/scenes/intro/intro_ui.gui\"\n"
   "  position {\n"
   "    x: 0.0\n"
   "    y: 0.0\n"
@@ -55,9 +55,9 @@ embedded_instances {
   data: "embedded_components {\n"
   "  id: \"model\"\n"
   "  type: \"model\"\n"
-  "  data: \"mesh: \\\"/ld48/assets/planet/planet.dae\\\"\\n"
-  "material: \\\"/ld48/materials/dirlight/dirlight_model.material\\\"\\n"
-  "textures: \\\"/ld48/assets/planet/planet_skin.jpg\\\"\\n"
+  "  data: \"mesh: \\\"/assets/planet/planet.dae\\\"\\n"
+  "material: \\\"/materials/dirlight/dirlight_model.material\\\"\\n"
+  "textures: \\\"/assets/planet/planet_skin.jpg\\\"\\n"
   "skeleton: \\\"\\\"\\n"
   "animations: \\\"\\\"\\n"
   "default_animation: \\\"\\\"\\n"
@@ -93,3 +93,4 @@ embedded_instances {
     z: 1.0
   }
 }
+

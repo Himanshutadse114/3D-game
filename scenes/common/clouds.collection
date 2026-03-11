@@ -1,10 +1,10 @@
-name: "default"
+﻿name: "default"
 scale_along_z: 0
 embedded_instances {
   id: "sun"
   data: "components {\n"
   "  id: \"script\"\n"
-  "  component: \"/ld48/scenes/common/sun.script\"\n"
+  "  component: \"/scenes/common/sun.script\"\n"
   "  position {\n"
   "    x: 0.0\n"
   "    y: 0.0\n"
@@ -20,9 +20,9 @@ embedded_instances {
   "embedded_components {\n"
   "  id: \"sprite\"\n"
   "  type: \"sprite\"\n"
-  "  data: \"tile_set: \\\"/ld48/assets/clouds.atlas\\\"\\n"
+  "  data: \"tile_set: \\\"/assets/clouds.atlas\\\"\\n"
   "default_animation: \\\"sun\\\"\\n"
-  "material: \\\"/ld48/materials/sprite_no_write.material\\\"\\n"
+  "material: \\\"/materials/sprite_no_write.material\\\"\\n"
   "blend_mode: BLEND_MODE_ALPHA\\n"
   "\"\n"
   "  position {\n"
@@ -55,3 +55,4 @@ embedded_instances {
     z: 10.0
   }
 }
+
