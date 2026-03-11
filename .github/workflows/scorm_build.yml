@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Setup Java
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         java-version: '11'
         distribution: 'temurin'
@@ -21,7 +21,7 @@ jobs:
     - name: Download Bob
       run: |
         mkdir -p tools
-        curl -L -o tools/bob.jar https://github.com/defold/defold/releases/download/1.5.0/bob.jar
+        curl -L -o tools/bob.jar https://d.defold.com/archive/stable/bob/bob.jar
 
     - name: Resolve Dependencies
       run: java -jar tools/bob.jar resolve
@@ -33,12 +33,19 @@ jobs:
 
     - name: Package SCORM
       run: |
-        cp imsmanifest.xml build/html5/js-web/innvikta_driller/imsmanifest.xml
-        cd build/html5/js-web/innvikta_driller
+        # Find the actual output directory (it depends on project title)
+        EXPORT_DIR=$(find build/html5/js-web -maxdepth 1 -mindepth 1 -type d | head -n 1)
+        if [ -z "$EXPORT_DIR" ]; then
+          echo "Error: Could not find build directory"
+          exit 1
+        fi
+        echo "Export directory: $EXPORT_DIR"
+        cp imsmanifest.xml "$EXPORT_DIR/imsmanifest.xml"
+        cd "$EXPORT_DIR"
         zip -r ../../../../innvikta_driller_scorm.zip *
 
     - name: Upload SCORM Zip
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: scorm-package
         path: innvikta_driller_scorm.zip

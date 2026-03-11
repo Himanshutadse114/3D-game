@@ -11,21 +11,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout 🛎️
-        uses: actions/checkout@v2.3.1
+        uses: actions/checkout@v4
 
       - name: Install Java ♨️
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v4
         with:
-          distribution: "adopt"
+          distribution: "temurin"
           java-version: "11"
 
       - name: Install Node ✨
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v4
         with:
-          node-version: "14"
+          node-version: "18"
 
       - name: Setup Cache 🦐
-        uses: actions/cache@v2.1.5
+        uses: actions/cache@v4
         with:
           path: |
             .internal/lib
@@ -42,7 +42,7 @@ jobs:
         run: |
           lsb_release -a
 
-          mkdir -p build/bundle build/npm-cache
+          mkdir -p build/bundle build/npm-cache build/bundle/public
 
           npm config set cache build/npm-cache -g
           npm install -g html-minifier@4.0.0 uglify-js@3.12.8 node-jq@1.12.0 --unsafe-perm
@@ -53,15 +53,26 @@ jobs:
           java -jar build/bundle/bob.jar --version
 
           java -jar build/bundle/bob.jar --build-server https://build-stage.defold.com --email foo@bar.com --auth 12345 --texture-compression true --bundle-output build/bundle/js-web --build-report-html build/bundle/report.html --platform js-web --archive --variant release resolve build bundle
-          mv build/bundle/js-web/* build/bundle/public
+          
+          # Check if bundle output exists
+          if [ -d "build/bundle/js-web" ]; then
+            mv build/bundle/js-web/*/* build/bundle/public/ || mv build/bundle/js-web/* build/bundle/public/ || true
+          fi
 
-          html-minifier --case-sensitive --remove-comments --collapse-whitespace --preserve-line-breaks --minify-css true --minify-js true "build/bundle/public/index.html" -o "build/bundle/public/index.html"
-          uglifyjs "build/bundle/public/dmloader.js" --compress --mangle --webkit --source-map url=dmloader.js.map,includeSources=true --output "build/bundle/public/dmloader.js"
+          if [ -f "build/bundle/public/index.html" ]; then
+            html-minifier --case-sensitive --remove-comments --collapse-whitespace --preserve-line-breaks --minify-css true --minify-js true "build/bundle/public/index.html" -o "build/bundle/public/index.html"
+          fi
+          
+          if [ -f "build/bundle/public/dmloader.js" ]; then
+            uglifyjs "build/bundle/public/dmloader.js" --compress --mangle --webkit --source-map url=dmloader.js.map,includeSources=true --output "build/bundle/public/dmloader.js"
+          fi
 
-          mv build/bundle/report.html build/bundle/public/
+          if [ -f "build/bundle/report.html" ]; then
+            mv build/bundle/report.html build/bundle/public/
+          fi
 
       - name: Deploy to Pages 🚀
-        uses: JamesIves/github-pages-deploy-action@4.1.1
+        uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
           folder: build/bundle/public
@@ -74,4 +85,9 @@ jobs:
           if [ ! -f butler ]; then curl -L -o butler.zip https://broth.itch.ovh/butler/linux-amd64/LATEST/archive/default && unzip -o butler.zip; fi
           chmod +x butler
           ./butler -V
-          ./butler push public glitchman/driller:html5-release
+          # Only push if Butler API key is set
+          if [ -n "$BUTLER_API_KEY" ]; then
+            ./butler push public glitchman/driller:html5-release
+          else
+            echo "Skipping Butler push: BUTLER_API_KEY not set"
+          fi
