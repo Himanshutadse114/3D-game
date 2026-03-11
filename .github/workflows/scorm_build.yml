@@ -21,15 +21,18 @@ jobs:
     - name: Download Bob
       run: |
         mkdir -p tools
-        curl -L -o tools/bob.jar https://d.defold.com/archive/stable/bob/bob.jar
+        # Fetch the latest stable sha1
+        BOB_SHA1=$(curl -s 'https://d.defold.com/stable/info.json' | grep -oP '"sha1":\s*"\K[^"]+')
+        echo "Using Bob SHA1: $BOB_SHA1"
+        curl -L -o tools/bob.jar "https://d.defold.com/archive/${BOB_SHA1}/bob/bob.jar"
 
     - name: Resolve Dependencies
-      run: java -jar tools/bob.jar resolve
+      run: java -jar tools/bob.jar --email foo@bar.com --auth 12345 resolve
 
     - name: Build HTML5
       run: |
         mkdir -p build/html5
-        java -jar tools/bob.jar --archive --platform js-web build bundle --variant release --archive build/html5
+        java -jar tools/bob.jar --email foo@bar.com --auth 12345 --archive --platform js-web build bundle --variant release --archive build/html5
 
     - name: Package SCORM
       run: |
